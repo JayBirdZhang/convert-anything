@@ -15,9 +15,9 @@ nonisolated struct BugReport: Sendable {
 
     // MARK: - Where reports go
 
-    /// "Convert Anything — Bug Report" (the form's ID, and its questions from ⋮ › Pre-fill form).
+    /// "Convert Anything — Bug Report": its public ID, and its questions from ⋮ › Pre-fill form.
     enum Form {
-        static let id = "13rKnpsQXZc8CbXaNVePrKxw6vOxEEPQlRGI1tu_byoY"
+        static let id = "1FAIpQLSewlzUAIc8do6rgnxzBNy0QMGjqmnADiSWi0FUIAzFDU57S5g"
         static let whatHappened = "entry.249791518"   // What happened? (left for the reporter)
         static let appVersion = "entry.2030405449"     // App version
         static let macOSVersion = "entry.1997545783"   // macOS version
@@ -42,7 +42,7 @@ nonisolated struct BugReport: Sendable {
 
     var formURL: URL {
         fitted(limit: Self.formLimit, cost: { $0.count }) { report in
-            Self.url("https://docs.google.com/forms/d/\(Form.id)/viewform", [
+            Self.url("https://docs.google.com/forms/d/e/\(Form.id)/viewform", [
                 ("usp", "pp_url"),
                 (Form.appVersion, report.appVersion),
                 (Form.macOSVersion, report.macOSVersion),
