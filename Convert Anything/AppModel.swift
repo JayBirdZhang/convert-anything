@@ -29,6 +29,7 @@ import UserNotifications
     var resultMissing = false   // Showing it in Finder found it gone
     var pageCount: Int?
     var task: Task<Void, Never>?
+    var alreadyPDF = false  // A PDF picked for "Combine into One PDF": nothing to convert, it's merged as it is
 
     init(originalURL: URL, fileURL: URL, from: Format, to: Format) {
         self.originalURL = originalURL
@@ -57,6 +58,7 @@ import UserNotifications
     var lastAdded = Date()
     var summarized = false      // Its notification has been sent; later renames start a new batch
     var combinedURL: URL?       // When a batch renamed to PDF was merged into one file
+    var combine: Bool?          // From Finder's menu: whether to merge its PDFs, whatever the Combine PDFs setting says
 
     init(folder: URL, to: Format) {
         self.folder = folder
@@ -196,6 +198,7 @@ enum OriginalsMode: String, CaseIterable {
 
         UNUserNotificationCenter.current().delegate = notificationDelegate
         watcher.onRename = { [weak self] from, to in self?.handleRename(from: from, to: to) }
+        FinderMenuRequests.handler = { [weak self] request in self?.convert(request) }
         IWork.needsAttention = { [weak self] title, body in
             Task { @MainActor [weak self] in self?.notify(title, body: body, important: true) }
         }
@@ -234,16 +237,28 @@ enum OriginalsMode: String, CaseIterable {
         let folder = newURL.deletingLastPathComponent()
         let batch: Batch
         if let open = batches.first(where: {
-            $0.folder == folder && $0.to == newFormat && !$0.summarized && Date().timeIntervalSince($0.lastAdded) < Self.batchWindow
+            $0.folder == folder && $0.to == newFormat && !$0.summarized && $0.combine == nil
+                && Date().timeIntervalSince($0.lastAdded) < Self.batchWindow
         }) {
             batch = open
         } else {
-            batch = Batch(folder: folder, to: newFormat)
-            batches.insert(batch, at: 0)
-            trimHistory()
+            batch = newBatch(folder: folder, to: newFormat)
         }
+        start(job, in: batch)
+    }
+
+    private func newBatch(folder: URL, to format: Format) -> Batch {
+        let batch = Batch(folder: folder, to: format)
+        batches.insert(batch, at: 0)
+        trimHistory()
+        return batch
+    }
+
+    /// Adds a renamed file to a batch and converts it, or puts its name back when it can't become that format.
+    private func start(_ job: Job, in batch: Batch) {
         batch.jobs.append(job)
         batch.lastAdded = Date()
+        let source = job.from, newFormat = job.to
 
         guard Converter.route(from: source, to: newFormat) != nil else {
             revertRename(job)
@@ -253,6 +268,68 @@ enum OriginalsMode: String, CaseIterable {
         }
         job.task = Task { await run(job) }
         updatePulse()
+    }
+
+    // MARK: Finder's "Convert to" menu
+
+    /// Converts files chosen in Finder's "Convert to ▸" menu. Each one is renamed to the new extension and
+    /// converted exactly as if the user had renamed it: the Originals setting, undo, Recent and notifications
+    /// all work the same. It works in any folder, and while watching is paused, because it was asked for.
+    ///
+    /// Plain "PDF" gives one PDF per file. "Combine into One PDF" merges them into one whatever the Combine
+    /// PDFs setting says, taking selected PDFs as they are; it goes in the first file's folder.
+    func convert(_ request: FinderMenuRequests.Request) {
+        let combine = request.choice == .combine
+        let target: Format
+        switch request.choice {
+        case .format(let format): target = format
+        case .combine: target = .pdf
+        }
+        let fileManager = FileManager.default
+        var made: [URL: Batch] = [:]
+        func batch(for file: URL) -> Batch {
+            let folder = (combine ? request.files[0] : file).deletingLastPathComponent()
+            if let batch = made[folder] { return batch }
+            let batch = newBatch(folder: folder, to: target)
+            batch.combine = combine
+            made[folder] = batch
+            return batch
+        }
+
+        for file in request.files {
+            guard let oldFormat = Format(fileExtension: file.pathExtension), fileManager.fileExists(atPath: file.path) else { continue }
+            if combine && oldFormat == .pdf {
+                let job = Job(originalURL: file, fileURL: file, from: .pdf, to: .pdf)
+                job.alreadyPDF = true
+                job.state = .done
+                job.resultURL = file
+                let batch = batch(for: file)
+                batch.jobs.append(job)
+                batch.lastAdded = Date()
+                continue
+            }
+            guard oldFormat != target else { continue }
+            let renamed = uniqueFileURL(file.deletingPathExtension().appendingPathExtension(target.preferredExtension))
+            do {
+                // The folder watcher ignores the app's own renames, so this doesn't start a second conversion.
+                try fileManager.moveItem(at: file, to: renamed)
+            } catch {
+                log.error("Finder menu couldn't rename \(file.lastPathComponent, privacy: .public): \(error.localizedDescription, privacy: .public)")
+                notify("Couldn't convert \(file.lastPathComponent)", body: error.localizedDescription)
+                continue
+            }
+            guard let source = sourceFormat(of: renamed, oldFormat: oldFormat) else {
+                try? fileManager.moveItem(at: renamed, to: file)
+                notify("Couldn't convert \(file.lastPathComponent)", body: "Convert Anything can't read this file.")
+                continue
+            }
+            // It already was the new format under a wrong extension: the rename fixed it.
+            guard source != target else { continue }
+            start(Job(originalURL: file, fileURL: renamed, from: source, to: target), in: batch(for: file))
+        }
+        for batch in made.values {
+            if batch.jobs.isEmpty { batches.removeAll { $0 === batch } } else { summarizeWhenFinished(batch) }
+        }
     }
 
     /// What's actually inside the file decides the source format, not the old extension.
@@ -429,7 +506,7 @@ enum OriginalsMode: String, CaseIterable {
             guard !batch.isActive, !batch.summarized,
                   Date().timeIntervalSince(batch.lastAdded) >= Self.batchWindow else { return }
             batch.summarized = true
-            if combinePDFs, batch.to == .pdf { await combine(batch) }
+            if batch.combine ?? combinePDFs, batch.to == .pdf { await combine(batch) }
             summarize(batch)
         }
     }
@@ -452,7 +529,15 @@ enum OriginalsMode: String, CaseIterable {
                 }
                 guard merged.write(to: combined) else { throw ConversionError.failed("Couldn't write the combined PDF.") }
             }.value
-            for url in pdfs { try? FileManager.default.trashItem(at: url, resultingItemURL: nil) }
+            // The separate PDFs go to the Trash. Selected PDFs that went in as they were are originals, so they follow the Originals setting.
+            let selectedPDFs = Set(batch.jobs.filter(\.alreadyPDF).map(\.fileURL))
+            for url in pdfs {
+                switch selectedPDFs.contains(url) ? originals : .trash {
+                case .trash: try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                case .delete: try? FileManager.default.removeItem(at: url)
+                case .keep: break
+                }
+            }
             batch.jobs.forEach { undoStore.remove(converted: $0.fileURL.path) }
             batch.jobs.filter { $0.resultURL.map(pdfs.contains) == true }.forEach { $0.combinedInto = combined }
             batch.combinedURL = combined

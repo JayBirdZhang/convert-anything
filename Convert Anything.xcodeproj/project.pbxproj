@@ -54,6 +54,11 @@
 			path = "Convert Anything";
 			sourceTree = "<group>";
 		};
+		000000000000000000000310 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 		000000000000000000000210 /* Finder Menu */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -83,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				000000000000000000000010 /* Convert Anything */,
+				000000000000000000000310 /* Shared */,
 				000000000000000000000210 /* Finder Menu */,
 				000000000000000000000020 /* Products */,
 			);
@@ -116,6 +122,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000010 /* Convert Anything */,
+				000000000000000000000310 /* Shared */,
 			);
 			name = "Convert Anything";
 			packageProductDependencies = (
@@ -137,6 +144,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				000000000000000000000210 /* Finder Menu */,
+				000000000000000000000310 /* Shared */,
 			);
 			name = "Finder Menu";
 			productName = "Finder Menu";

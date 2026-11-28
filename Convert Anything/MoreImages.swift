@@ -2,17 +2,6 @@ import AppKit
 import ImageIO
 import UniformTypeIdentifiers
 
-/// What ImageIO can write on this Mac. JPEG XL and TGA support depends on the macOS version, so they're only
-/// offered as conversion targets when they're on the list. Asked once, the first time anyone needs it.
-nonisolated enum ImageWriters {
-    private static let identifiers = Set(CGImageDestinationCopyTypeIdentifiers() as? [String] ?? [])
-
-    static func supports(_ format: Format) -> Bool {
-        guard let type = format.utType else { return false }
-        return identifiers.contains(type.identifier)
-    }
-}
-
 // MARK: - SVG
 
 /// SVG pictures, drawn by AppKit's own SVG support (macOS 14 and later).

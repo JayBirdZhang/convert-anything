@@ -22,6 +22,8 @@ struct SettingsView: View {
                         SettingRow("Open at login") {
                             Toggle("Open at login", isOn: $model.launchAtLogin)
                         }
+                        CardDivider()
+                        FinderMenuRow()
                     }
                     Card(title: "Updates") {
                         SettingRow("Check automatically", help: "Look for a new version about once a day and offer to install it.") {
@@ -119,6 +121,23 @@ struct SettingsView: View {
                 Toggle("Combine PDFs", isOn: $model.combinePDFs)
             }
         }
+    }
+}
+
+/// Whether Finder's right-click "Convert to" menu is on. It's turned on in System Settings, which can't tell
+/// the app when it changes, so this looks again whenever the app becomes active.
+private struct FinderMenuRow: View {
+    @State private var isEnabled = FinderMenuRequests.isEnabled
+
+    var body: some View {
+        SettingRow("Finder menu", detail: isEnabled ? "Right-click a file, then Convert to" : "Off. Turn it on in System Settings.",
+                   help: "Adds Convert to to the menu you get when you right-click files in Finder, as another way to convert them. It's turned on under Login Items & Extensions in System Settings.") {
+            Button(isEnabled ? "Settings…" : "Turn On…") { FinderMenuRequests.openSettings() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            isEnabled = FinderMenuRequests.isEnabled
+        }
+        .onAppear { isEnabled = FinderMenuRequests.isEnabled }
     }
 }
 

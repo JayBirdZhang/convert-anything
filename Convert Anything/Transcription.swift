@@ -518,7 +518,7 @@ nonisolated enum Transcript {
 /// SRT and WebVTT files: their text without the timings, or the same cues in the other format.
 nonisolated enum Subtitles {
     /// Formats that are written directly; other documents (Word, PDF…) are laid out from the plain text.
-    static let directTargets: [Format] = [.txt, .md, .srt, .vtt]
+    static let directTargets = Converter.subtitleTargets
 
     static func convert(_ request: Converter.Request, output: URL) async throws {
         let data = try Data(contentsOf: request.input)

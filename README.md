@@ -37,6 +37,7 @@ https://github.com/user-attachments/assets/cd589974-3f86-4b3d-a146-ac4dc21ce3fd
 - **Private.** Everything runs on your Mac: no uploads, no accounts, all offline.
 - **Undo by renaming back.** Change the extension back or just ⌘ + Z to get the original.
 - **Many files at once.** Select them, right-click → Rename..., and replace the extension.
+- **Or right-click → Convert to.** A Finder menu with the formats each file can become, in any folder.
 - **History by day.** Recent conversions in the menu, color-coded by kind of file.
 - **Updates itself** with [Sparkle](https://sparkle-project.org).
 
@@ -94,6 +95,8 @@ Requires macOS 14 (Sonoma) or later, on Apple Silicon or Intel.
 Allow notifications when asked, and turn on **Open at login** if you want it always running.
 
 Hint: To convert multiple files at once, select them, right-click → Rename..., and replace the extension.
+
+Prefer a menu? Right-click files in Finder and choose **Convert to**. It lists what they can become, the likely ones first, and converts them just like a rename. Turn it on once under **Settings → Finder menu** (it opens System Settings → General → Login Items & Extensions → Finder).
 
 ## FAQ
 

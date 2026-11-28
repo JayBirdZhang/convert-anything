@@ -85,10 +85,6 @@ struct FormatsView: View {
     }
 }
 
-extension Format {
-    /// The extension people usually type.
-    var preferredExtension: String { self == .jpeg ? "jpg" : rawValue }
-}
 
 /// Lays its views out left to right, wrapping onto new lines like words in a paragraph.
 private struct FlowLayout: Layout {

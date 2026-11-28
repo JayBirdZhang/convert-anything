@@ -8,16 +8,6 @@ enum UnsupportedConversion {
     /// The most the hint names. More than this is a list nobody reads.
     private static let limit = 4
 
-    /// Roughly how common each format is, most useful first. Formats not listed here (new ones) come last,
-    /// in the order they're declared.
-    private static let popular: [Format] = [
-        .pdf, .docx, .pptx, .txt, .md, .rtf, .html, .odt, .doc,
-        .png, .jpeg, .heic, .webp, .gif, .tiff, .bmp, .avif, .ico,
-        .xlsx, .csv,
-        .m4a, .mp3, .wav, .flac, .aac, .aiff, .opus, .ogg,
-        .mp4, .mov, .m4v,
-    ]
-
     /// "Can't turn MP3 into OGG. Try M4A, WAV, FLAC or AAC."
     ///
     /// `originalExtension` is what the file was called before the rename. When the file's contents turn out
@@ -72,8 +62,8 @@ enum UnsupportedConversion {
         return all.enumerated()
             .filter { Converter.route(from: from, to: $0.element) != nil }
             .sorted { a, b in
-                let ra = popular.firstIndex(of: a.element) ?? popular.count
-                let rb = popular.firstIndex(of: b.element) ?? popular.count
+                let ra = Format.popularity.firstIndex(of: a.element) ?? Format.popularity.count
+                let rb = Format.popularity.firstIndex(of: b.element) ?? Format.popularity.count
                 return ra != rb ? ra < rb : a.offset < b.offset
             }
             .map(\.element)
