@@ -530,10 +530,13 @@ enum OriginalsMode: String, CaseIterable {
                 guard merged.write(to: combined) else { throw ConversionError.failed("Couldn't write the combined PDF.") }
             }.value
             // The separate PDFs go to the Trash. Selected PDFs that went in as they were are originals, so they follow the Originals setting.
-            let selectedPDFs = Set(batch.jobs.filter(\.alreadyPDF).map(\.fileURL))
             for url in pdfs {
-                switch selectedPDFs.contains(url) ? originals : .trash {
-                case .trash: try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                let selected = batch.jobs.first { $0.alreadyPDF && $0.fileURL == url }
+                switch selected != nil ? originals : .trash {
+                case .trash:
+                    var trashed: NSURL?
+                    try? FileManager.default.trashItem(at: url, resultingItemURL: &trashed)
+                    selected?.originalInTrash = trashed as URL?   // So Undo can put it back
                 case .delete: try? FileManager.default.removeItem(at: url)
                 case .keep: break
                 }

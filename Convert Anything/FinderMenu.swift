@@ -43,7 +43,8 @@ enum FinderMenuRequests {
         guard let text = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue,
               let link = URLComponents(string: text), link.scheme == "convertanything", link.host == "convert" else { return }
         guard sentByOwnExtension(event) else {
-            log.error("Ignored a convert link that didn't come from the Finder menu")
+            let pid = event.attributeDescriptor(forKeyword: AEKeyword(keySenderPIDAttr))?.int32Value ?? -1
+            log.error("Ignored a convert link that didn't come from the Finder menu (sender pid \(pid))")
             return
         }
         let items = link.queryItems ?? []

@@ -131,7 +131,7 @@ private struct FinderMenuRow: View {
 
     var body: some View {
         SettingRow("Finder menu", detail: isEnabled ? "Right-click a file, then Convert to" : "Off. Turn it on in System Settings.",
-                   help: "Adds Convert to to the menu you get when you right-click files in Finder, as another way to convert them. It's turned on under Login Items & Extensions in System Settings.") {
+                   help: "Adds Convert to to the menu you get when you right-click files in Finder, as another way to convert them. Turn On… opens the place in System Settings where it's switched on.") {
             Button(isEnabled ? "Settings…" : "Turn On…") { FinderMenuRequests.openSettings() }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in

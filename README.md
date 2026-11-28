@@ -96,7 +96,7 @@ Allow notifications when asked, and turn on **Open at login** if you want it alw
 
 Hint: To convert multiple files at once, select them, right-click → Rename..., and replace the extension.
 
-Prefer a menu? Right-click files in Finder and choose **Convert to**. It lists what they can become, the likely ones first, and converts them just like a rename. Turn it on once under **Settings → Finder menu** (it opens System Settings → General → Login Items & Extensions → Finder).
+Prefer a menu? Right-click files in Finder and choose **Convert to**. It lists what they can become, the likely ones first, and converts them just like a rename. Turn it on once: **Settings → Finder menu → Turn On…** takes you to the right place in System Settings.
 
 ## FAQ
 
