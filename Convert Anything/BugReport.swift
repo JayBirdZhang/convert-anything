@@ -15,17 +15,17 @@ nonisolated struct BugReport: Sendable {
 
     // MARK: - Where reports go
 
-    /// From the form's ⋮ › Get pre-filled link. The question titles are in the comments.
+    /// "Convert Anything — Bug Report" (the form's ID, and its questions from ⋮ › Pre-fill form).
     enum Form {
-        static let id = "FORM_ID_PLACEHOLDER"
-        static let whatHappened = "entry.1000000001"   // What happened? (left for the reporter)
-        static let appVersion = "entry.1000000002"     // App version
-        static let macOSVersion = "entry.1000000003"   // macOS version
-        static let macModel = "entry.1000000004"       // Mac model
-        static let conversion = "entry.1000000005"     // Conversion
-        static let errorMessage = "entry.1000000006"   // Error message
-        static let log = "entry.1000000007"            // Recent log
-        static let email = "entry.1000000008"          // Contact email (optional; left for the reporter)
+        static let id = "13rKnpsQXZc8CbXaNVePrKxw6vOxEEPQlRGI1tu_byoY"
+        static let whatHappened = "entry.249791518"   // What happened? (left for the reporter)
+        static let appVersion = "entry.2030405449"     // App version
+        static let macOSVersion = "entry.1997545783"   // macOS version
+        static let macModel = "entry.65164408"       // Mac model
+        static let conversion = "entry.1366513454"     // Conversion
+        static let errorMessage = "entry.319493321"   // Error message
+        static let log = "entry.433755357"            // Recent log
+        static let email = "entry.1727194320"          // Contact email (optional; left for the reporter)
     }
     static let repository = "https://github.com/JayBirdZhang/Convert-Anything"
 
@@ -42,7 +42,7 @@ nonisolated struct BugReport: Sendable {
 
     var formURL: URL {
         fitted(limit: Self.formLimit, cost: { $0.count }) { report in
-            Self.url("https://docs.google.com/forms/d/e/\(Form.id)/viewform", [
+            Self.url("https://docs.google.com/forms/d/\(Form.id)/viewform", [
                 ("usp", "pp_url"),
                 (Form.appVersion, report.appVersion),
                 (Form.macOSVersion, report.macOSVersion),
