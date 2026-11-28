@@ -9,6 +9,19 @@
 	<string>eq8DzqpmEUfAQkel8yvF1KWlNPmBVWvgE0hNNFnRe3Y=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
+	<!-- Finder's "Convert to" menu hands its requests to the app as convertanything:// links. The app only
+	     accepts ones sent by its own Finder extension (FinderMenu.swift). -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>io.github.jaybirdzhang.ConvertAnything.convert</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>convertanything</string>
+			</array>
+		</dict>
+	</array>
 	<!-- Transcription (audio or video renamed to .txt, .srt or .vtt). Asked the first time it's used. -->
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Convert Anything writes down what's said in audio and video you rename to .txt, .srt or .vtt. It all happens on your Mac.</string>

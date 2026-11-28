@@ -4,6 +4,10 @@ import AppKit
 /// Launch-time hooks: the welcome panel on the very first launch, and again whenever the app is opened
 /// while it's already running (a menu-bar app otherwise shows nothing at all when you open it).
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        FinderMenuRequests.install()   // Before launch finishes, so a link that started the app isn't missed
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         _ = Updates.shared   // Starts Sparkle's daily check
         // Give the menu-bar icon a moment to appear, so the panel can point at it.
